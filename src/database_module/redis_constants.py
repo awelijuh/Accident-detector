@@ -1,0 +1,8 @@
+CAPTURE_READ_FPS = 'capture_read_fps'
+CAPTURE_LAST_IMAGE = 'capture_last_image'
+LAST_DETECT = 'last_detect'
+DETECT_BENCHMARK = 'detect_benchmark'
+READ_FRAME = 'read_frame'
+DETECT_FRAME = 'detect_frame'
+CURRENT_IMAGE_INDEX = 'current_image_index'
+CURRENT_IMAGE_TIME = 'current_image_time'

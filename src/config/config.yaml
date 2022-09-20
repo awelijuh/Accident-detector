@@ -1,0 +1,29 @@
+capture:
+  stream_url: https://s1.moidom-stream.ru/s/public/0000001301.m3u8
+  capture_fps: 30
+
+  saver:
+    image_path: media/images
+    video_path: media/videos
+    image_format: jpg
+    video_enable: false
+    max_images: 500
+
+detect:
+  image_format: jpg
+  image_path: media/images
+  detect_path: media/detect
+  max_images: 500
+  image_url: ${oc.env.image_url, http://localhost:8081/stream}
+
+redis:
+  host: ${oc.env:redis_host, localhost}
+  port: 6379
+  db: 0
+
+api:
+  raw_path: media/images
+  detected_path: media/detect
+  image_format: jpg
+  image_url: ${oc.env.image_url, http://localhost:8081/stream}
+  detect_url: ${oc.env.detect_url, http://localhost:8082/stream}
