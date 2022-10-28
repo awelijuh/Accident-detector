@@ -6,7 +6,7 @@ import numpy as np
 from Yolov5_StrongSORT_OSNet.yolov5.utils.augmentations import letterbox
 from config.provider import get_conf
 from database_module import map_service
-from my_utils import TimeMeter
+from common.my_utils import TimeMeter
 
 conf = get_conf().detect
 
@@ -32,7 +32,7 @@ class LoadMedia:
         # self.x, self.y, self.w, self.h = cv2.boundingRect(cnt)
         self.meter = TimeMeter('read_image')
 
-        self.stream = cv2.VideoCapture('http://localhost:8081/stream')
+        self.stream = cv2.VideoCapture(conf.image_url)
 
     def __iter__(self):
         self.count = 0

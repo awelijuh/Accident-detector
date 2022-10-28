@@ -6,6 +6,7 @@ import numpy as np
 from fastapi import FastAPI
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import StreamingResponse
 from starlette.staticfiles import StaticFiles
 
 from common.my_utils import resize_to_height, TimeMeter
@@ -77,21 +78,21 @@ def stream(type=None, size=None):
         return fastapi.responses.RedirectResponse(
             api_conf.image_url,
             status_code=status.HTTP_302_FOUND)
-    elif type == 'detected':
-        return fastapi.responses.RedirectResponse(
-            api_conf.detect_url,
-            status_code=status.HTTP_302_FOUND)
-    # type_to_path = {
-    #     'raw': api_conf.raw_path,
-    #     'detected': api_conf.detected_path
-    # }
-    # type_to_redis_key = {
-    #     'raw': 'image',
-    #     'detected': 'detect',
-    # }
-    #
-    # return StreamingResponse(gen_stream(type_to_path.get(type), type_to_redis_key.get(type), size=size),
-    #                          media_type="multipart/x-mixed-replace;boundary=frame")
+    # elif type == 'detected':
+    #     return fastapi.responses.RedirectResponse(
+    #         api_conf.detect_url,
+    #         status_code=status.HTTP_302_FOUND)
+    type_to_path = {
+        'raw': api_conf.raw_path,
+        'detected': api_conf.detected_path
+    }
+    type_to_redis_key = {
+        'raw': 'image',
+        'detected': 'detect',
+    }
+
+    return StreamingResponse(gen_stream(type_to_path.get(type), type_to_redis_key.get(type), size=size),
+                             media_type="multipart/x-mixed-replace;boundary=frame")
 
 
 @app.get('/api/filterObjects')

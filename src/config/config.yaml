@@ -14,7 +14,7 @@ detect:
   image_path: media/images
   detect_path: media/detect
   max_images: 500
-  image_url: ${oc.env.image_url, http://localhost:8081/stream}
+  image_url: ${oc.env:image_url, http://localhost:8081/stream}
 
 redis:
   host: ${oc.env:redis_host, localhost}
@@ -25,5 +25,5 @@ api:
   raw_path: media/images
   detected_path: media/detect
   image_format: jpg
-  image_url: ${oc.env.image_url, http://localhost:8081/stream}
-  detect_url: ${oc.env.detect_url, http://localhost:8082/stream}
+  image_url: http://localhost:8081/stream
+  detect_url: http://localhost:8082/stream
