@@ -1,5 +1,5 @@
 capture:
-  stream_url: https://s1.moidom-stream.ru/s/public/0000001301.m3u8
+  stream_url: ${oc.env:stream_url, https://s1.moidom-stream.ru/s/public/0000001301.m3u8}
   capture_fps: 30
 
   saver:
