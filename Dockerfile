@@ -20,3 +20,4 @@ RUN pip install -r requirements.txt
 RUN pip install -e git+https://github.com/mohamed-challal/pafy.git@develop#egg=pafy
 
 COPY src /src/
+RUN pip install -r src/detect_module/Yolov5_StrongSORT_OSNet/requirements.txt
