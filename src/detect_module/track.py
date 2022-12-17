@@ -29,6 +29,8 @@ if str(ROOT / 'Yolov5_StrongSORT_OSNet') not in sys.path:
     sys.path.insert(0, str(ROOT / 'Yolov5_StrongSORT_OSNet'))  # add yolov5 ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5'))  # add yolov5 ROOT to PATH
+if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils') not in sys.path:
+    sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils'))  # add yolov5 ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort'))  # add strong_sort ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid') not in sys.path:
@@ -169,8 +171,9 @@ def run(
             curr_frames[i] = im0
 
             annotator = Annotator(im0, line_width=2, pil=not ascii)
-            if cfg.STRONGSORT.ECC:  # camera motion compensation
-                strongsort_list[i].tracker.camera_update(prev_frames[i], curr_frames[i])
+            if hasattr(strongsort_list[i], 'tracker') and hasattr(strongsort_list[i].tracker, 'camera_update'):
+                if prev_frames[i] is not None and curr_frames[i] is not None:  # camera motion compensation
+                    strongsort_list[i].tracker.camera_update(prev_frames[i], curr_frames[i])
 
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
