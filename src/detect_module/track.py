@@ -87,7 +87,7 @@ detect_conf = provider.get_conf().detect
 # detect_img = manager.Value('var', None)
 #
 # multiprocessing.Process(target=create_flask, args=(detect_img,)).start()
-config_strongsort = ROOT / 'Yolov5_StrongSORT_OSNet/strong_sort/configs/strong_sort.yaml'
+config_strongsort = ROOT / 'Yolov5_StrongSORT_OSNet/trackers/strong_sort/configs/strong_sort.yaml'
 
 
 def create_tracker(tracker_type, appearance_descriptor_weights, device, half):
