@@ -44,14 +44,16 @@ if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'trackers/strong_sort') not in sys.pat
 
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-import logging
 from Yolov5_StrongSORT_OSNet.yolov5.models.common import DetectMultiBackend
 from Yolov5_StrongSORT_OSNet.yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_boxes,
                                                           xyxy2xywh, strip_optimizer)
 from Yolov5_StrongSORT_OSNet.yolov5.utils.torch_utils import select_device, time_sync
 from Yolov5_StrongSORT_OSNet.yolov5.utils.plots import Annotator, colors
 from dataset import LoadMedia
-from Yolov5_StrongSORT_OSNet.trackers.multi_tracker_zoo import create_tracker
+from Yolov5_StrongSORT_OSNet.trackers.bytetrack.byte_tracker import BYTETracker
+from Yolov5_StrongSORT_OSNet.trackers.ocsort.ocsort import OCSort
+from Yolov5_StrongSORT_OSNet.trackers.strong_sort.strong_sort import StrongSORT
+from Yolov5_StrongSORT_OSNet.trackers.strong_sort.utils.parser import get_config
 
 # remove duplicated stream handler to avoid duplicated logging
 # logging.getLogger().removeHandler(logging.getLogger().handlers[0])
@@ -59,7 +61,6 @@ from Yolov5_StrongSORT_OSNet.trackers.multi_tracker_zoo import create_tracker
 from config import provider
 
 detect_conf = provider.get_conf().detect
-
 
 # def create_flask(var):
 #     app = Flask(__name__)
@@ -86,13 +87,54 @@ detect_conf = provider.get_conf().detect
 # detect_img = manager.Value('var', None)
 #
 # multiprocessing.Process(target=create_flask, args=(detect_img,)).start()
+config_strongsort = ROOT / 'Yolov5_StrongSORT_OSNet/strong_sort/configs/strong_sort.yaml'
+
+
+def create_tracker(tracker_type, appearance_descriptor_weights, device, half):
+    if tracker_type == 'strongsort':
+        # initialize StrongSORT
+        cfg = get_config()
+        cfg.merge_from_file(config_strongsort)
+
+        strongsort = StrongSORT(
+            appearance_descriptor_weights,
+            device,
+            half,
+            max_dist=cfg.STRONGSORT.MAX_DIST,
+            max_iou_distance=cfg.STRONGSORT.MAX_IOU_DISTANCE,
+            max_age=cfg.STRONGSORT.MAX_AGE,
+            max_unmatched_preds=cfg.STRONGSORT.MAX_UNMATCHED_PREDS,
+            n_init=cfg.STRONGSORT.N_INIT,
+            nn_budget=cfg.STRONGSORT.NN_BUDGET,
+            mc_lambda=cfg.STRONGSORT.MC_LAMBDA,
+            ema_alpha=cfg.STRONGSORT.EMA_ALPHA,
+
+        )
+        return strongsort
+    elif tracker_type == 'ocsort':
+        ocsort = OCSort(
+            det_thresh=0.45,
+            iou_threshold=0.2,
+            use_byte=False
+        )
+        return ocsort
+    elif tracker_type == 'bytetrack':
+        bytetracker = BYTETracker(
+            track_thresh=0.6,
+            track_buffer=30,
+            match_thresh=0.8,
+            frame_rate=30
+        )
+        return bytetracker
+    else:
+        print('No such tracker')
+        exit()
 
 
 @torch.no_grad()
 def run(
         yolo_weights=WEIGHTS / 'yolov5s.pt',  # model.pt path(s),
         strong_sort_weights=WEIGHTS / 'osnet_x0_25_msmt17.pt',  # model.pt path,
-        config_strongsort=ROOT / 'Yolov5_StrongSORT_OSNet/strong_sort/configs/strong_sort.yaml',
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
