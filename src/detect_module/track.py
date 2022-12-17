@@ -31,6 +31,8 @@ if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5'))  # add yolov5 ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils'))  # add yolov5 ROOT to PATH
+if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils/general') not in sys.path:
+    sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/utils/general'))  # add yolov5 ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort'))  # add strong_sort ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid') not in sys.path:
@@ -44,7 +46,7 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 import logging
 from Yolov5_StrongSORT_OSNet.yolov5.models.common import DetectMultiBackend
-from Yolov5_StrongSORT_OSNet.yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords,
+from Yolov5_StrongSORT_OSNet.yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_boxes,
                                                           xyxy2xywh, strip_optimizer)
 from Yolov5_StrongSORT_OSNet.yolov5.utils.torch_utils import select_device, time_sync
 from Yolov5_StrongSORT_OSNet.yolov5.utils.plots import Annotator, colors
@@ -52,7 +54,7 @@ from dataset import LoadMedia
 from Yolov5_StrongSORT_OSNet.trackers.multi_tracker_zoo import create_tracker
 
 # remove duplicated stream handler to avoid duplicated logging
-logging.getLogger().removeHandler(logging.getLogger().handlers[0])
+# logging.getLogger().removeHandler(logging.getLogger().handlers[0])
 
 from config import provider
 
@@ -177,7 +179,7 @@ def run(
 
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
+                det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()  # xyxy
 
                 xywhs = xyxy2xywh(det[:, 0:4])
                 confs = det[:, 4]
