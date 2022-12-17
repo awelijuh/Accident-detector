@@ -1,11 +1,9 @@
-import multiprocessing
 import os
 import sys
 from pathlib import Path
 
 import cv2
 import torch
-from flask import Flask, Response
 
 from database_module import map_service
 # limit the number of cpus used by high performance libraries
@@ -36,7 +34,10 @@ if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort') not in sys.path:
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid') not in sys.path:
     sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid'))  # add strong_sort ROOT to PATH
 if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid') not in sys.path:
-    sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'yolov5/models'))  # add strong_sort ROOT to PATH
+    sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'strong_sort/deep/reid'))
+if str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'trackers/strong_sort') not in sys.path:
+    sys.path.append(str(ROOT / 'Yolov5_StrongSORT_OSNet' / 'trackers/strong_sort'))
+
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 import logging
@@ -45,9 +46,8 @@ from Yolov5_StrongSORT_OSNet.yolov5.utils.general import (LOGGER, check_img_size
                                                           xyxy2xywh, strip_optimizer)
 from Yolov5_StrongSORT_OSNet.yolov5.utils.torch_utils import select_device, time_sync
 from Yolov5_StrongSORT_OSNet.yolov5.utils.plots import Annotator, colors
-from Yolov5_StrongSORT_OSNet.strong_sort.utils.parser import get_config
-from Yolov5_StrongSORT_OSNet.strong_sort.strong_sort import StrongSORT
 from dataset import LoadMedia
+from Yolov5_StrongSORT_OSNet.trackers.multi_tracker_zoo import create_tracker
 
 # remove duplicated stream handler to avoid duplicated logging
 logging.getLogger().removeHandler(logging.getLogger().handlers[0])
@@ -127,27 +127,11 @@ def run(
 
     dataset = LoadMedia(imgsz, stride)
 
-    # initialize StrongSORT
-    cfg = get_config()
-    cfg.merge_from_file(config_strongsort)
-
     # Create as many strong sort instances as there are video sources
     strongsort_list = []
     for i in range(nr_sources):
-        strongsort_list.append(
-            StrongSORT(
-                strong_sort_weights,
-                device,
-                max_dist=cfg.STRONGSORT.MAX_DIST,
-                max_iou_distance=cfg.STRONGSORT.MAX_IOU_DISTANCE,
-                max_age=cfg.STRONGSORT.MAX_AGE,
-                n_init=cfg.STRONGSORT.N_INIT,
-                nn_budget=cfg.STRONGSORT.NN_BUDGET,
-                mc_lambda=cfg.STRONGSORT.MC_LAMBDA,
-                ema_alpha=cfg.STRONGSORT.EMA_ALPHA,
-
-            )
-        )
+        tracker = create_tracker('strongsort', strong_sort_weights, device, half)
+        strongsort_list.append(tracker)
     outputs = [None] * nr_sources
 
     # Run tracking
